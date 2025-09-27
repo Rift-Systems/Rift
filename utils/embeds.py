@@ -289,3 +289,113 @@ class PrefixSuccessEmbedNoneChanged(discord.Embed):
             description=f"The current prefix for this server is `{new_prefix}`.",
             color=discord.Color.green(),
         )
+
+class OnGuildEmbed:
+    @staticmethod
+    def create_guild_join_embed(
+        guild,
+        current_guild_count,
+    ):
+        embed = discord.Embed(
+            title="Joined a New Guild",
+            color=discord.Color.from_str("#89ffbc")
+        )
+
+        embed.add_field(
+            name="Guild",
+            value=f"{guild.name} (ID: {guild.id})",
+            inline=True
+        )
+        embed.add_field(
+            name="Member Count",
+            value=str(guild.member_count),
+            inline=True
+        )
+        embed.add_field(
+            name="Owner Info",
+            value=f"{guild.owner} (ID: {guild.owner.id})" if guild.owner else "Owner not found",
+            inline=True
+        )
+        embed.add_field(
+            name="Current Guild Count",
+            value=str(current_guild_count),
+            inline=True
+        )
+
+        return embed
+
+    def create_guild_remove_embed(
+        guild,
+        current_guild_count,
+    ):
+        embed = discord.Embed(
+            title="Removed From a Guild",
+            color=discord.Color.from_str("#eb0909")
+        )
+
+        embed.add_field(
+            name="Guild",
+            value=f"{guild.name} (ID: {guild.id})",
+            inline=True
+        )
+        embed.add_field(
+            name="Member Count",
+            value=str(guild.member_count),
+            inline=True
+        )
+        embed.add_field(
+            name="Owner Info",
+            value=f"{guild.owner} (ID: {guild.owner.id})" if guild.owner else "Owner not found",
+            inline=True
+        )
+        embed.add_field(
+            name="Current Guild Count",
+            value=str(current_guild_count),
+            inline=True
+        )
+
+        return embed
+    
+class OnCommandEmbed:
+    @staticmethod
+    def create_command_embed(
+        command_name: str,
+        user,
+        guild,
+        channel,
+        timestamp: datetime,
+        args: str = "None",
+    ):
+        embed = discord.Embed(
+            title=f"Command Used: {command_name}",
+            color=discord.Color.from_str("#89ffbc"),
+            timestamp=timestamp
+        )
+
+        embed.add_field(
+            name="User",
+            value=f"{user} (ID: {user.id})",
+            inline=True
+        )
+        embed.add_field(
+            name="Guild",
+            value=f"{guild.name} (ID: {guild.id})" if guild else "DM (No Guild)",
+            inline=True
+        )
+        embed.add_field(
+            name="Owner Info",
+            value=f"{guild.owner} (ID: {guild.owner.id})" if guild and guild.owner else "Owner not found",
+            inline=True
+        )
+        embed.add_field(
+            name="Channel",
+            value=f"{channel} (ID: {channel.id})",
+            inline=True
+        )
+        embed.add_field(
+            name="Arguments",
+            value=args,
+            inline=False
+        )
+
+        return embed
