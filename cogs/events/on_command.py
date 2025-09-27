@@ -11,7 +11,7 @@ class OnCommand(commands.Cog):
 
     @commands.Cog.listener()
     async def on_command(self, ctx: commands.Context):        
-        log_channel_id = 1382626198978564188
+        log_channel_id = 1421575045813370890
         channel = ctx.guild.get_channel(log_channel_id)
     
         embed = OnCommandEmbed.create_on_command_embed(
