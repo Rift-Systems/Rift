@@ -1,0 +1,6 @@
+.env
+*/.env
+cogs/premium.py
+unused/premium.py
+/cogs/premium.py
+/unused/premium.py
