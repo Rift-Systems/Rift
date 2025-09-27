@@ -33,7 +33,7 @@ class Rift(commands.AutoShardedBot):
 
         self.error = "<:RiftFail:1421378112339312742>"
         self.success = "<:RiftSuccess:1421378019167309888>"
-        self.loading = "<a:RiftLoading:1421377775549546599>"
+        self.loading = "<:RiftLoading:1421377775549546599>"
         self.warning = "<:RiftWarning:1421378257378345041>"
         self.base_color = 0x89ffbc
         self.context = RiftContext
