@@ -39,7 +39,7 @@ jobs:
                 "title": "Push to ${REPO}:${BRANCH}",
                 "url": "https://github.com/${REPO}/compare/${BEFORE}...${AFTER}",
                 "description": "Pushed by **${ACTOR}**",
-                "color": 7506394,
+                "color": 9041788,
                 "fields": [
                   {
                     "name": "Commits",
