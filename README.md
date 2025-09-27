@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="assets/riftlogo.png" alt="Rift Systems Logo"/>
+    <img src="assets/riftlogo.png" alt="Rift Systems Logo" width="200" length="200"/>
 </p>
 
 <h1 align="center">Rift Systems | Rift</h1>
