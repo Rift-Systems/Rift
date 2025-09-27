@@ -9,17 +9,14 @@ on:
 jobs:
   notify:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - name: Checkout (full history for diffs)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Build Discord message
+      - name: Build Discord embed
         id: build
-        shell: bash
         run: |
           REPO="${{ github.repository }}"
           BRANCH="${{ github.ref_name }}"
@@ -27,36 +24,42 @@ jobs:
           BEFORE="${{ github.event.before }}"
           AFTER="${{ github.sha }}"
 
-          # Commit summaries from the event payload
-          COMMITS=$(jq -r '.commits[] | "- \(.id[0:7]) \(.message | gsub("\\n"; " ")) by \(.author.username // .author.name)"' "$GITHUB_EVENT_PATH" || true)
+          COMMITS=$(jq -r '.commits[] | "- [`\(.id[0:7])`](\(.url)) \(.message | gsub("\\n"; " ")) by \(.author.username // .author.name)"' "$GITHUB_EVENT_PATH" || true)
 
-          # Changed files across the push range (handle first-push case)
           if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE" ]; then
-            CHANGES=$(git diff --name-status "$AFTER^!" | head -n 50 || true)
+            CHANGES=$(git diff --name-status "$AFTER^!" | head -n 20 || true)
           else
-            CHANGES=$(git diff --name-status "$BEFORE" "$AFTER" | head -n 50 || true)
+            CHANGES=$(git diff --name-status "$BEFORE" "$AFTER" | head -n 20 || true)
           fi
 
+          cat > payload.json <<JSON
           {
-            echo "content<<EOF"
-            echo "📦 $REPO → $BRANCH"
-            echo
-            echo "Pushed by **$ACTOR**"
-            echo
-            echo "**Commits**"
-            echo "$COMMITS"
-            echo
-            echo "**Changed files**"
-            echo '```'
-            echo "$CHANGES"
-            echo '```'
-            echo
-            echo "https://github.com/$REPO/compare/$BEFORE...$AFTER"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+            "embeds": [
+              {
+                "title": "Push to ${REPO}:${BRANCH}",
+                "url": "https://github.com/${REPO}/compare/${BEFORE}...${AFTER}",
+                "description": "Pushed by **${ACTOR}**",
+                "color": 7506394,
+                "fields": [
+                  {
+                    "name": "Commits",
+                    "value": "${COMMITS:-No commits found}",
+                    "inline": false
+                  },
+                  {
+                    "name": "Changed files",
+                    "value": "```\\n${CHANGES:-No changes}\\n```",
+                    "inline": false
+                  }
+                ]
+              }
+            ]
+          }
+          JSON
+          echo "payload=payload.json" >> "$GITHUB_OUTPUT"
 
       - name: Send to Discord
-        uses: tsickert/discord-webhook@v5.4.0
-        with:
-          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          content: ${{ steps.build.outputs.content }}
+        run: |
+          curl -sS -H "Content-Type: application/json" \
+            -d @"${{ steps.build.outputs.payload }}" \
+            "${{ secrets.DISCORD_WEBHOOK_URL }}"
