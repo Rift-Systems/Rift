@@ -178,7 +178,7 @@ async def global_blacklist_check(ctx):
         
         em = discord.Embed(
             title="",
-            description=f"{rift.warning} **Blacklisted User** \n\n> You are blacklisted from Rift, you can email us to check the reason for this blacklist or to request a removal at `support@riftbot.xyz`.",
+            description=f"{rift.warning} **Blacklisted User** \n\n> You are blacklisted from Rift, you can email us to check the reason for this blacklist or to request a removal at `support@riftsystems.xyz`.",
             color=constants.rift_embed_color_setup(),
         )
 
@@ -192,7 +192,7 @@ async def global_blacklist_check(ctx):
         
         em = discord.Embed(
             title="",
-            description=f"{rift.warning} **Blacklisted Guild** \n\n> This server is blacklisted from Rift, you can email us to check the reason for this blacklist or to request a removal at `support@riftbot.xyz`.",
+            description=f"{rift.warning} **Blacklisted Guild** \n\n> This server is blacklisted from Rift, you can email us to check the reason for this blacklist or to request a removal at `support@riftsystems.xyz`.",
             color=constants.rift_embed_color_setup(),
         )
         

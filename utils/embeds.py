@@ -95,7 +95,7 @@ class AboutEmbed:
     ):
         embed = discord.Embed(
             description=(
-                "ift is an all-in-one server management and moderation, and staff management tool for ERLC based servers, You can use it to do operations like infractions, shift management, sessions, and more!"
+                "Rift is an all-in-one server management and moderation, and staff management tool for ERLC based servers, You can use it to do operations like infractions, shift management, sessions, and more!"
             ),
             color=discord.Color.from_str("#2a2c30"),
         )

@@ -70,7 +70,7 @@ class AdminCommandsCog(commands.Cog):
                 
                 row = await cur.fetchone()
 
-                if row and row.get("accessLevel") == "Developer":
+                if row and row.get("access_level") == "Developer":
                     embed = discord.Embed(
                         description=f"{self.rift.error} You cannot blacklist another **Developer** or **Administrator**.",
                         color=self.rift.base_color,
