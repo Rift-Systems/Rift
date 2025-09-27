@@ -8,25 +8,25 @@
 
 <h2 align="center">Important Information</h2>
 
-<p align="center">Rift Systems was created by <a href="https://github.com/orgs/Rift-Systems/people/NickDerry2023">@NickDerry2023</a> and <a href="https://github.com/orgs/Rift-Systems/people/JustDizo">@JustDizo</a> to help the community with automation solutions to make server and staff management easier to work with. We saw a need to help the community and decided to act on filling that need.</p>
+<p align="center">Rift Systems was created by <a href="https://github.com/NickDerry2023" target="_blank">@NickDerry2023</a> and <a href="https://github.com/JustDizo" target="_blank">@JustDizo</a> to help the community with automation solutions to make server and staff management easier to work with. We saw a need to help the community and decided to act on filling that need.</p>
 
 <p align="center">
-    <a href="https://discord.gg/EPaU5aWqCU#gh-dark-mode-only">
+    <a href="https://discord.gg/EPaU5aWqCU#gh-dark-mode-only" target="_blank">
         <img src="assets/discordLight.svg" alt="Discord"/>
     </a>
-    <a href="https://discord.gg/EPaU5aWqCU#gh-light-mode-only">
+    <a href="https://discord.gg/EPaU5aWqCU#gh-light-mode-only" target="_blank">
         <img src="assets/discordDark.svg" alt="Discord"/>
     </a>
-    <a href="https://riftsystems.xyz/#gh-dark-mode-only">
+    <a href="https://riftsystems.xyz/#gh-dark-mode-only" target="_blank">
         <img src="assets/websiteLight.svg" alt="Website"/>
     </a>
-    <a href="https://riftsystems.xyz/#gh-light-mode-only">
+    <a href="https://riftsystems.xyz/#gh-light-mode-only" target="_blank">
         <img src="assets/websiteDark.svg" alt="Website"/>
     </a>
-    <a href="https://discord.com/oauth2/authorize?client_id=1421283588883742874&permissions=581808014879990&integration_type=0&scope=bot#gh-dark-mode-only">
+    <a href="https://discord.com/oauth2/authorize?client_id=1421283588883742874&permissions=581808014879990&integration_type=0&scope=bot#gh-dark-mode-only" target="_blank">
         <img src="assets/inviteLight.svg" alt="Invite Rift"/>
     </a>
-    <a href="https://discord.com/oauth2/authorize?client_id=1421283588883742874&permissions=581808014879990&integration_type=0&scope=bot#gh-light-mode-only">
+    <a href="https://discord.com/oauth2/authorize?client_id=1421283588883742874&permissions=581808014879990&integration_type=0&scope=bot#gh-light-mode-only" target="_blank">
         <img src="assets/inviteDark.svg" alt="Invite Rift"/>
     </a>
 </p>
