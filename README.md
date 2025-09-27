@@ -23,6 +23,12 @@
     <a href="https://riftsystems.xyz/#gh-light-mode-only">
         <img src="assets/websiteDark.svg" alt="Website"/>
     </a>
+    <a href="https://discord.com/oauth2/authorize?client_id=1421283588883742874&permissions=581808014879990&integration_type=0&scope=bot#gh-dark-mode-only">
+        <img src="assets/inviteLight.svg" alt="Invite Rift"/>
+    </a>
+    <a href="https://discord.com/oauth2/authorize?client_id=1421283588883742874&permissions=581808014879990&integration_type=0&scope=bot#gh-light-mode-only">
+        <img src="assets/inviteDark.svg" alt="Invite Rift"/>
+    </a>
 </p>
 
 <h2 align="center">License</h2>
