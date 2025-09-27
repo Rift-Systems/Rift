@@ -1,6 +1,6 @@
 # ==========================================================================================================
 # This software was created by Nexure Solutions LLP and Rift Systems.
-# This software was created by Nick Derry and Abby.
+# This software was created by Nick Derry, JustDizo, Dozen and Abby.
 # ==========================================================================================================
 
 import discord
