@@ -124,6 +124,95 @@ class CommandsCog(commands.Cog):
             await ctx.channel.send(message, allowed_mentions=discord.AllowedMentions.none())
             await ctx.message.delete()
 
+# ---------------------------------------------------------------
+# USERINFO COMMAND FOR DISCORD
+# ---------------------------------------------------------------
+@commands.hybrid_command(
+    name="userinfo",
+    description="Get information about a user.",
+    with_app_command=True,
+    extras={"category": "General"},
+)
+async def userinfo(self, ctx: RiftContext, member: discord.User = None):
+    member = member or ctx.author
+
+    # Account Creation
+    created_at = member.created_at.replace(tzinfo=datetime.timezone.utc)
+    created_fmt = created_at.strftime("%B %d, %Y %I:%M %p")
+    created_ago = self._time_ago(created_at)
+
+    # Server Join (if applicable)
+    joined_fmt = None
+    joined_ago = None
+    if isinstance(member, discord.Member):
+        if member.joined_at:
+            joined_at = member.joined_at.replace(tzinfo=datetime.timezone.utc)
+            joined_fmt = joined_at.strftime("%B %d, %Y %I:%M %p")
+            joined_ago = self._time_ago(joined_at)
+
+    # Build Embed
+    embed = discord.Embed(
+        title=f"{member.name}#{member.discriminator}",
+        description=f"User information for **{member.display_name}**",
+        color=0x89ffbc,
+    )
+    embed.set_thumbnail(url=member.display_avatar.url)
+
+    embed.add_field(name="ID", value=str(member.id), inline=False)
+    embed.add_field(
+        name="Created On", 
+        value=f"{created_fmt} ({created_ago})", 
+        inline=False
+    )
+
+    if joined_fmt and joined_ago:
+        embed.add_field(
+            name="Joined Server On", 
+            value=f"{joined_fmt} ({joined_ago})", 
+            inline=False
+        )
+
+    if isinstance(member, discord.Member):
+        roles = [role.mention for role in member.roles if role.name != "@everyone"]
+        embed.add_field(
+            name="Roles", 
+            value=", ".join(roles) if roles else "None", 
+            inline=False
+        )
+
+    embed.set_footer(
+        text=f"Requested at {datetime.now().strftime('%B %d, %Y %I:%M %p')}"
+    )
+
+    await ctx.send(embed=embed)
+
+
+def _time_ago(self, dt: datetime):
+    """Return human-readable time difference."""
+    now = datetime.now(datetime.timezone.utc)
+    delta = now - dt
+
+    days, seconds = delta.days, delta.seconds
+    years, days = divmod(days, 365)
+    months, days = divmod(days, 30)
+    hours, seconds = divmod(seconds, 3600)
+    minutes, seconds = divmod(seconds, 60)
+
+    parts = []
+    if years > 0:
+        parts.append(f"{years} year{'s' if years != 1 else ''}")
+    if months > 0:
+        parts.append(f"{months} month{'s' if months != 1 else ''}")
+    if days > 0:
+        parts.append(f"{days} day{'s' if days != 1 else ''}")
+    if hours > 0:
+        parts.append(f"{hours} hour{'s' if hours != 1 else ''}")
+    if minutes > 0:
+        parts.append(f"{minutes} minute{'s' if minutes != 1 else ''}")
+    if seconds > 0 and not parts:
+        parts.append(f"{seconds} second{'s' if seconds != 1 else ''}")
+
+    return ", ".join(parts) + " ago"
 
 
 async def setup(rift):
