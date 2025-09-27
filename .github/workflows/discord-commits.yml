@@ -3,62 +3,60 @@ name: Post commits to Discord
 on:
   push:
     branches:
-      - "**"
+      - '**'
+  workflow_dispatch:
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - name: Checkout (full history for diffs)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Build commit summary
-        id: summary
+      - name: Build Discord message
+        id: build
+        shell: bash
         run: |
-          # Basic context
           REPO="${{ github.repository }}"
           BRANCH="${{ github.ref_name }}"
           ACTOR="${{ github.actor }}"
           BEFORE="${{ github.event.before }}"
           AFTER="${{ github.sha }}"
 
-          # List commits in this push
-          COMMITS=$(jq -r '.commits[] | "- \(.id[0:7]) \(.message | gsub("\n"; " ")) by \(.author.username // .author.name)"' "$GITHUB_EVENT_PATH")
+          # Commit summaries from the event payload
+          COMMITS=$(jq -r '.commits[] | "- \(.id[0:7]) \(.message | gsub("\\n"; " ")) by \(.author.username // .author.name)"' "$GITHUB_EVENT_PATH" || true)
 
-          # List changed files across the push range
-          git fetch --no-tags --prune --depth=0
-          CHANGES=$(git diff --name-status "$BEFORE" "$AFTER" | head -n 50)
+          # Changed files across the push range (handle first-push case)
+          if [ "$BEFORE" = "0000000000000000000000000000000000000000" ] || [ -z "$BEFORE" ]; then
+            CHANGES=$(git diff --name-status "$AFTER^!" | head -n 50 || true)
+          else
+            CHANGES=$(git diff --name-status "$BEFORE" "$AFTER" | head -n 50 || true)
+          fi
 
-          # Cap lengths to keep Discord happy (~2000 char limit for content)
-          truncate() { awk -v max="$1" '{buf=buf $0 ORS} END{ if (length(buf)>max) print substr(buf,1,max-20) "...(truncated)"; else print buf }'; }
-
-          TITLE="📦 ${REPO} → ${BRANCH}"
-          BODY=$(cat <<EOF
-Pushed by **${ACTOR}**
-
-**Commits**
-${COMMITS}
-
-**Changed files**
-\`\`\`
-${CHANGES}
-\`\`\`
-
-<https://github.com/${REPO}/compare/${BEFORE}...${AFTER}>
-EOF
-)
-
-          SAFE_BODY=$(printf "%s" "$BODY" | truncate 1800)
-
-          # Write JSON payload to a file (use jq for safe escaping)
-          jq -n --arg content "$TITLE\n\n$SAFE_BODY" '{content:$content}' > payload.json
+          {
+            echo "content<<EOF"
+            echo "📦 $REPO → $BRANCH"
+            echo
+            echo "Pushed by **$ACTOR**"
+            echo
+            echo "**Commits**"
+            echo "$COMMITS"
+            echo
+            echo "**Changed files**"
+            echo '```'
+            echo "$CHANGES"
+            echo '```'
+            echo
+            echo "https://github.com/$REPO/compare/$BEFORE...$AFTER"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Send to Discord
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-        run: |
-          curl -sS -H "Content-Type: application/json" \
-            -d @payload.json \
-            "$DISCORD_WEBHOOK_URL"
+        uses: tsickert/discord-webhook@v5.4.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: ${{ steps.build.outputs.content }}
