@@ -20,7 +20,7 @@
     <a href="https://riftsystems.xyz/#gh-dark-mode-only">
         <img src="assets/websiteLight.svg" alt="Website"/>
     </a>
-    <a href="https://riftsystems.xyz/#gh-light-mode-only"/>
+    <a href="https://riftsystems.xyz/#gh-light-mode-only">
         <img src="assets/websiteDark.svg" alt="Website"/>
     </a>
 </p>
