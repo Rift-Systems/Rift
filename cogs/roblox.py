@@ -14,8 +14,8 @@ AVATAR_API = "https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={us
 
 
 class Roblox(commands.Cog):
-    def __init__(self, bot: commands.Bot):
-        self.bot = bot
+    def __init__(self, rift: commands.Bot):
+        self.rift = rift
 
     async def fetch_json(self, url: str):
         async with aiohttp.ClientSession() as session:
@@ -24,17 +24,15 @@ class Roblox(commands.Cog):
 
     async def resolve_user_id(self, identifier: str | int):
         """Resolve a username or ID into a Roblox user ID"""
-        if str(identifier).isdigit():  
+        if str(identifier).isdigit():
             return int(identifier)
 
-        
         data = await self.fetch_json(USERNAME_TO_ID.format(username=identifier))
         if data and "Id" in data and data["Id"] != 0:
             return int(data["Id"])
         return None
 
     async def build_embed(self, user_id: int):
-        
         user_data = await self.fetch_json(ROBLOX_API.format(user_id=user_id))
         if "name" not in user_data:
             return None
@@ -59,7 +57,7 @@ class Roblox(commands.Cog):
         embed = discord.Embed(
             title=username,
             description=f"Roblox profile for **{username}**",
-            color=0x89ffbc
+            color=0x89FFBC
         )
         embed.set_thumbnail(url=avatar_url)
         embed.add_field(name="Created on", value=created, inline=False)
@@ -76,27 +74,36 @@ class Roblox(commands.Cog):
     async def roblox_slash(self, interaction: discord.Interaction, identifier: str):
         user_id = await self.resolve_user_id(identifier)
         if not user_id:
-            return await interaction.response.send_message("❌ Could not find that Roblox user.", ephemeral=True)
+            embed = discord.Embed(
+                description="❌ Could not find that Roblox user.",
+                color=0x89FFBC,
+            )
+            return await interaction.response.send_message(embed=embed, ephemeral=True)
 
         embed = await self.build_embed(user_id)
         if embed:
             await interaction.response.send_message(embed=embed)
         else:
-            await interaction.response.send_message("❌ Failed to fetch Roblox profile.", ephemeral=True)
+            embed = discord.Embed(
+                description="❌ Failed to fetch Roblox profile.",
+                color=0x89FFBC,
+            )
+            await interaction.response.send_message(embed=embed, ephemeral=True)
 
     # Prefix command
     @commands.command(name="roblox")
     async def roblox_prefix(self, ctx: commands.Context, identifier: str):
         user_id = await self.resolve_user_id(identifier)
         if not user_id:
-            return await ctx.send("❌ Could not find that Roblox user.")
+            return await ctx.send_error("Could not find that Roblox user.")
 
         embed = await self.build_embed(user_id)
         if embed:
             await ctx.send(embed=embed)
         else:
-            await ctx.send("❌ Failed to fetch Roblox profile.")
+            await ctx.send_error("Failed to fetch Roblox profile.")
 
 
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Roblox(bot))
+async def setup(rift: commands.Bot):
+    await rift.add_cog(Roblox(rift))
+
