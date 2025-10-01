@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> f7e77aa (Squashed commit of the following:)
 # ==========================================================================================================
 # This file is for shift related settings or as from our dirrivative software duty commands, for example
 # shift manage, which allow you to start, stop, or take a break while working with shifts, this will also
@@ -10,10 +5,6 @@
 # from orginally called it duty, and had duty manage, this would be similar.
 # ==========================================================================================================
 
-<<<<<<< HEAD
-=======
->>>>>>> keep-current
->>>>>>> f7e77aa (Squashed commit of the following:)
 # This file is incomplete.
 
 

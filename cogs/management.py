@@ -201,50 +201,6 @@ class ManagementCommandCog(commands.Cog):
 
 
         await ctx.send(embed=embed)
-        
-        
-    @commands.hybrid_group(name="panel", with_app_command=True, description="This command group will allow you to add user to the panel and remove users from the panel.")
-    async def panel(self, ctx: RiftContext):
-        if ctx.invoked_subcommand is None:
-            return await ctx.send_error("Use a subcommand: `/panel add` or `/panel remove`.")
-        
-    
-    @panel.command(name="add", description="Creates a panel user for the target.")
-    async def panel_add_user(self, ctx: RiftContext, target: discord.User):
-        if ctx.interaction is None:
-            return await ctx.send_error("Use the **slash** command `/panel add` to open the modal.")
-        modal = AddUserModal(target_user_id=target.id)
-        await ctx.interaction.response.send_modal(modal)
-
-
-    @panel.command(name="remove", description="Removes a panel user for the target")
-    async def panel_remove_user(self, ctx: RiftContext, target: discord.User):
-        target_id = target.id
-        display = target.mention
-
-        if not constants.pool:
-            await constants.connect()
-
-        async with constants.pool.acquire() as conn:
-            async with conn.cursor(aiomysql.DictCursor) as cur:
-                await cur.execute("SELECT id FROM users WHERE oauth_id=%s", (target_id,))
-                row = await cur.fetchone()
-                if not row:
-                    return await ctx.send_error(f"{display} does not exist in the `users` table (oauth_id={target_id}).")
-
-                await cur.execute(
-                    """
-                    UPDATE users
-                    SET status='Terminated',
-                        status_reason='Removed by admin',
-                        status_date=CURDATE()
-                    WHERE oauth_id=%s
-                    """,
-                    (target_id,)
-                )
-            await conn.commit()
-
-        await ctx.send_success(f"Marked **{display}** as **Terminated**.")
 
 
 async def setup(rift):

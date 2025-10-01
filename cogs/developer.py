@@ -1,16 +1,7 @@
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
->>>>>>> f7e77aa (Squashed commit of the following:)
 # ==========================================================================================================
 # This file is for developer only commands such as dev_add and dev_remove as well as sync and some others.
 # ==========================================================================================================
 
-<<<<<<< HEAD
-=======
->>>>>>> keep-current
->>>>>>> f7e77aa (Squashed commit of the following:)
 import re
 import discord
 import time
@@ -23,6 +14,7 @@ from utils.constants import RiftConstants, blacklists
 from utils.utils import RiftContext
 from utils.modals import BlacklistModal
 from utils.pagination import GuildPaginator
+from utils.modals import AddUserModal
 
 constants = RiftConstants()
 
