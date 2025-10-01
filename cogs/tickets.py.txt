@@ -1,0 +1,6 @@
+# ==========================================================================================================
+# This file is for ticket related operations for things like opening, closing, and transcribing tickets.
+# ==========================================================================================================
+
+import discord
+import datetime

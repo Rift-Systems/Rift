@@ -1,0 +1,6 @@
+# ==========================================================================================================
+# This file is for session related commands like session start, session end, session low, session full, and
+# session full. This entire system is fully customizable by the database and the values for the embeds
+# should be pulled from the database, additionally emebeds should have a image at the top and a smaller 
+# bottom image at the bottom, similar to another dirrivative work we were inspired by.
+# ==========================================================================================================

@@ -1,0 +1,12 @@
+.env
+*/.env
+cogs/premium.py
+unused/premium.py
+/cogs/premium.py
+/unused/premium.py
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

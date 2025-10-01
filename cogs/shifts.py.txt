@@ -1,0 +1,38 @@
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> f7e77aa (Squashed commit of the following:)
+# ==========================================================================================================
+# This file is for shift related settings or as from our dirrivative software duty commands, for example
+# shift manage, which allow you to start, stop, or take a break while working with shifts, this will also
+# hold the shift leaderboard commands and all other shift operations, The software that this project dirrived
+# from orginally called it duty, and had duty manage, this would be similar.
+# ==========================================================================================================
+
+<<<<<<< HEAD
+=======
+>>>>>>> keep-current
+>>>>>>> f7e77aa (Squashed commit of the following:)
+# This file is incomplete.
+
+
+import discordfrom discord.ext import commands
+from discord import app_commands
+
+class ShiftButtons(discord.ui.View):
+    def __init__(self, state: str = "idle"):
+        super().__init__(timeout=None)
+        self.state = state
+        self.update_buttons()
+
+    def update_buttons(self):
+        self.clear_items()
+        if self.state == "idle":
+            self.add_item(discord.ui.Button(label="Start", style=discord.ButtonStyle.success, custom_id="shift_start"))
+        elif self.state == "active":
+            self.add_item(discord.ui.Button("Break", style=discord.ButtonStyle.primary, custom_id="shift_break"))
+            self.add_item(discord,uiButton(label"Stop", style=discord.ButtonStyle.danger, custom_id="shift_stop"))
+            elif self.state == "break":
+                self.add_item(discord.ui.Button(label="Resume", style=discord.ButtonStyle.success, custom_id="shift_resume"))
+                self.add_item(discord.ui.Button(label="Stop", style=discord.ButtonStyle.danger, custom_id="shift_stop"))
