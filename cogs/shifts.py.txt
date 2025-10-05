@@ -8,10 +8,12 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
+import mysql.connector
 
 class ShiftButtons(discord.ui.View):
-    def __init__(self, state: str = "idle"):
+    def __init__(self, cog, state: str = "idle"):
         super().__init__(timeout=None)
+        self.cog = cog
         self.state = state
         self.update_buttons()
 
@@ -26,41 +28,115 @@ class ShiftButtons(discord.ui.View):
             self.add_item(discord.ui.Button(label="Resume", style=discord.ButtonStyle.success, custom_id="shift_resume"))
             self.add_item(discord.ui.Button(label="Stop", style=discord.ButtonStyle.danger, custom_id="shift_stop"))
 
+    async def interaction_check(self, interaction: discord.Interaction) -> bool:
+        # Only allow staff to interact
+        return self.cog.staff_check(interaction.user)
+
+    async def on_timeout(self):
+        # Optionally handle timeout
+        pass
+
+    @discord.ui.button(label="Start", style=discord.ButtonStyle.success, custom_id="shift_start")
+    async def start_shift(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.cog.handle_shift_action(interaction, "active")
+
+    @discord.ui.button(label="Break", style=discord.ButtonStyle.primary, custom_id="shift_break")
+    async def break_shift(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.cog.handle_shift_action(interaction, "break")
+
+    @discord.ui.button(label="Resume", style=discord.ButtonStyle.success, custom_id="shift_resume")
+    async def resume_shift(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.cog.handle_shift_action(interaction, "active")
+
+    @discord.ui.button(label="Stop", style=discord.ButtonStyle.danger, custom_id="shift_stop")
+    async def stop_shift(self, interaction: discord.Interaction, button: discord.ui.Button):
+        await self.cog.handle_shift_action(interaction, "idle")
+
 class ShiftCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.embed_color = 0x00FF00
+        self.db_config = {
+            'host': 'localhost',
+            'user': 'YOUR_DB_USER',
+            'password': 'YOUR_DB_PASS',
+            'database': 'YOUR_DB_NAME',
+        }
 
     @commands.Cog.listener()
     async def on_ready(self):
         print("ShiftCog loaded and ready.")
 
-    @discord.app_commands.command(name="shiftmanage", description="Manage your shift with buttons")
-    async def shift_manage(self, interaction: discord.Interaction):
-        guild_id = interaction.guild_id
-        user_id = interaction.user.id
+    def staff_check(self, member: discord.Member) -> bool:
+        # Check for the Staff role
+        return any(role.name == "Staff" for role in getattr(member, "roles", []))
+
+    def get_user_shift_status(self, guild_id, user_id):
         try:
             conn = mysql.connector.connect(**self.db_config)
             cursor = conn.cursor()
-            
             cursor.execute(
                 "SELECT status FROM user_shifts WHERE guild_id = %s AND user_id = %s AND end_time IS NULL",
                 (guild_id, user_id)
             )
             row = cursor.fetchone()
-            current_state = row[0] if row else "idle"
-            
-            view = ShiftButtons(state=current_state)
-            embed = discord.Embed(
-                title="Shift Management",
-                description=f"{interaction.user.mention}, use the buttons to manage your shift.",
-                color=self.embed_color
-            )
-            embed.add_field(name="Current Status", value=current_state.capitalize(), inline=True)
-            embed.add_field(name="Server", value=interaction.guild.name, inline=True)
-            embed.set_author(name=interaction.user.display_name, icon_url=interaction.user.avatar.url if interaction.user.avatar else None)
-            embed.set_footer(text="Rift Staff Management")
-            await interaction.response.send_message(embed=embed, view=view)
-            
             cursor.close()
             conn.close()
+            return row[0] if row else "idle"
+        except Exception as e:
+            print(f"Error fetching shift status: {e}")
+            return "idle"
+
+    def update_user_shift(self, guild_id, user_id, new_status):
+        try:
+            conn = mysql.connector.connect(**self.db_config)
+            cursor = conn.cursor()
+            cursor.execute(
+                "UPDATE user_shifts SET status = %s WHERE guild_id = %s AND user_id = %s AND end_time IS NULL",
+                (new_status, guild_id, user_id)
+            )
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error updating shift: {e}")
+
+    def create_shift_embed(self, interaction, current_state):
+        user = interaction.user
+        avatar_url = user.display_avatar.url if hasattr(user, "display_avatar") else None
+        embed = discord.Embed(
+            title="Shift Management",
+            description=f"{user.mention}, use the buttons to manage your shift.",
+            color=self.embed_color
+        )
+        embed.add_field(name="Current Status", value=current_state.capitalize(), inline=True)
+        embed.add_field(name="Server", value=interaction.guild.name, inline=True)
+        embed.set_author(name=user.display_name, icon_url=avatar_url)
+        embed.set_footer(text="Rift Staff Management")
+        return embed
+
+    async def handle_shift_action(self, interaction: discord.Interaction, new_state: str):
+        if not self.staff_check(interaction.user):
+            await interaction.response.send_message("You do not have permission to manage shifts.", ephemeral=True)
+            return
+        guild_id = interaction.guild_id
+        user_id = interaction.user.id
+        self.update_user_shift(guild_id, user_id, new_state)
+        view = ShiftButtons(self, state=new_state)
+        embed = self.create_shift_embed(interaction, new_state)
+        await interaction.response.edit_message(embed=embed, view=view)
+
+    @app_commands.command(name="shiftmanage", description="Manage your shift with buttons")
+    async def shift_manage(self, interaction: discord.Interaction):
+        if not self.staff_check(interaction.user):
+            await interaction.response.send_message("You do not have permission to manage shifts.", ephemeral=True)
+            return
+        guild_id = interaction.guild_id
+        user_id = interaction.user.id
+        current_state = self.get_user_shift_status(guild_id, user_id)
+        view = ShiftButtons(self, state=current_state)
+        embed = self.create_shift_embed(interaction, current_state)
+        await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+
+async def setup(bot):
+    await bot.add_cog(ShiftCog(bot))
