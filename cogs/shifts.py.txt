@@ -1,5 +1,5 @@
 # ==========================================================================================================
-# This file is for shift related settings or as from our derivative software duty commands, for example
+# This file is for shift-related settings or as from our derivative software duty commands, for example
 # shift manage, which allow you to start, stop, or take a break while working with shifts, this will also
 # hold the shift leaderboard commands and all other shift operations. The software that this project derived
 # from originally called it duty, and had duty manage, this would be similar.
@@ -8,7 +8,7 @@
 import discord
 from discord.ext import commands
 from discord import app_commands
-import mysql.connector
+import aiomysql
 
 class ShiftButtons(discord.ui.View):
     def __init__(self, cog, state: str = "idle"):
@@ -58,10 +58,23 @@ class ShiftCog(commands.Cog):
         self.embed_color = 0x00FF00
         self.db_config = {
             'host': 'localhost',
-            'user': 'YOUR_DB_USER',
-            'password': 'YOUR_DB_PASS',
-            'database': 'YOUR_DB_NAME',
+            'user': 'DB_USER',
+            'password': 'DB_PASS',
+            'db': 'DB_NAME',
         }
+        self.pool = None
+
+    async def cog_load(self):
+        # Initialize the database connection pool
+        self.pool = await aiomysql.create_pool(**self.db_config)
+        print("Database pool initialized.")
+
+    async def cog_unload(self):
+        # Clean up the database connection pool
+        if pool := self.pool:
+            pool.close()
+            await pool.wait_closed()
+            print("Database pool closed.")
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -71,35 +84,31 @@ class ShiftCog(commands.Cog):
         # Check for the Staff role
         return any(role.name == "Staff" for role in getattr(member, "roles", []))
 
-    def get_user_shift_status(self, guild_id, user_id):
-        try:
-            conn = mysql.connector.connect(**self.db_config)
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT status FROM user_shifts WHERE guild_id = %s AND user_id = %s AND end_time IS NULL",
-                (guild_id, user_id)
-            )
-            row = cursor.fetchone()
-            cursor.close()
-            conn.close()
-            return row[0] if row else "idle"
-        except Exception as e:
-            print(f"Error fetching shift status: {e}")
-            return "idle"
+    async def get_user_shift_status(self, guild_id, user_id):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                try:
+                    await cursor.execute(
+                        "SELECT status FROM user_shifts WHERE guild_id = %s AND user_id = %s AND end_time IS NULL",
+                        (guild_id, user_id)
+                    )
+                    row = await cursor.fetchone()
+                    return row[0] if row else "idle"
+                except Exception as e:
+                    print(f"Error fetching shift status: {e}")
+                    return "idle"
 
-    def update_user_shift(self, guild_id, user_id, new_status):
-        try:
-            conn = mysql.connector.connect(**self.db_config)
-            cursor = conn.cursor()
-            cursor.execute(
-                "UPDATE user_shifts SET status = %s WHERE guild_id = %s AND user_id = %s AND end_time IS NULL",
-                (new_status, guild_id, user_id)
-            )
-            conn.commit()
-            cursor.close()
-            conn.close()
-        except Exception as e:
-            print(f"Error updating shift: {e}")
+    async def update_user_shift(self, guild_id, user_id, new_status):
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                try:
+                    await cursor.execute(
+                        "UPDATE user_shifts SET status = %s WHERE guild_id = %s AND user_id = %s AND end_time IS NULL",
+                        (new_status, guild_id, user_id)
+                    )
+                    await conn.commit()
+                except Exception as e:
+                    print(f"Error updating shift: {e}")
 
     def create_shift_embed(self, interaction, current_state):
         user = interaction.user
@@ -121,7 +130,7 @@ class ShiftCog(commands.Cog):
             return
         guild_id = interaction.guild_id
         user_id = interaction.user.id
-        self.update_user_shift(guild_id, user_id, new_state)
+        await self.update_user_shift(guild_id, user_id, new_state)
         view = ShiftButtons(self, state=new_state)
         embed = self.create_shift_embed(interaction, new_state)
         await interaction.response.edit_message(embed=embed, view=view)
@@ -133,7 +142,7 @@ class ShiftCog(commands.Cog):
             return
         guild_id = interaction.guild_id
         user_id = interaction.user.id
-        current_state = self.get_user_shift_status(guild_id, user_id)
+        current_state = await self.get_user_shift_status(guild_id, user_id)
         view = ShiftButtons(self, state=current_state)
         embed = self.create_shift_embed(interaction, current_state)
         await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
